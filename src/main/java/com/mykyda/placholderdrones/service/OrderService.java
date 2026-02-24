@@ -35,13 +35,12 @@ public class OrderService {
     private int FILTERED_SEARCH_PAGE_SIZE;
 
     @Transactional
-    public UUID save(OrderCreateDTO orderCreateDTO) {
+    public void save(OrderCreateDTO orderCreateDTO) {
         var uuid = UUID.randomUUID();
         var orderToSave = orderCreateDTO.toOrder();
         orderToSave.setId(uuid);
         orderRepository.save(orderToSave);
         mailService.sendOrderConfirmationEmail(uuid, orderCreateDTO.getEmail());
-        return uuid;
     }
 
     @Transactional(readOnly = true)

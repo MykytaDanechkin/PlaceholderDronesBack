@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,11 +17,6 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
-
-    @GetMapping
-    public List<Order> getAllByEmail(@RequestParam String email) {
-        return orderService.findAllByReceiverEmail(email);
-    }
 
     @GetMapping("/{id}")
     public Order getById(@PathVariable UUID id) {
@@ -47,8 +41,8 @@ public class OrderController {
     }
 
 
-    @DeleteMapping()
-    public ResponseEntity<String> deleteOrder(@RequestParam UUID id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteOrder(@PathVariable UUID id) {
         orderService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
