@@ -30,4 +30,10 @@ public class DronesExceptionHandler {
         return new ResponseEntity<>("Database error occurred",
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(LocationException.class)
+    public ResponseEntity<String> handleLocationException(LocationException ex) {
+        log.warn(ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

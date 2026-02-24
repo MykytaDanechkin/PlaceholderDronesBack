@@ -21,5 +21,10 @@ spring:
 
   config:
     import: optional:file:.env[.properties]
-search:
-  filtered-search-page-size: ${FILTERED_SEARCH_PAGE_SIZE:10}
+placeholder-drones:
+  search:
+    filtered-search-page-size: ${FILTERED_SEARCH_PAGE_SIZE:10}
+  delivery:
+    origin:
+      latitude: ${ORIGIN_LAT:40.7128}
+      longitude: ${ORIGIN_LON:-74.0060}

@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -31,16 +32,39 @@ public class OrderService {
 
     private final MailService mailService;
 
-    @Value("${search.filtered-search-page-size}")
+    private final GeoService geoService;
+
+    @Value("${placeholder-drones.search.filtered-search-page-size}")
     private int FILTERED_SEARCH_PAGE_SIZE;
 
     @Transactional
-    public void save(OrderCreateDTO orderCreateDTO) {
-        var uuid = UUID.randomUUID();
-        var orderToSave = orderCreateDTO.toOrder();
-        orderToSave.setId(uuid);
-        orderRepository.save(orderToSave);
-        mailService.sendOrderConfirmationEmail(uuid, orderCreateDTO.getEmail());
+    public void save(OrderCreateDTO dto) {
+
+        if (!geoService.validateNewYork(
+                dto.getTargetLatitude().doubleValue(),
+                dto.getTargetLongitude().doubleValue())) {
+
+            throw new IllegalArgumentException("Location must be inside New York state");
+        }
+
+        double distance = geoService.calculateDistance(
+                dto.getTargetLatitude().doubleValue(),
+                dto.getTargetLongitude().doubleValue()
+        );
+
+        Order order = Order.builder()
+                .id(UUID.randomUUID())
+                .receiverEmail(dto.getEmail())
+                .targetLatitude(dto.getTargetLatitude())
+                .targetLongitude(dto.getTargetLongitude())
+                .kitType(dto.getKitType())
+                .orderStatus(OrderStatus.ORDERED)
+                .paymentStatus(PaymentStatus.NOT_PAID)
+                .distance(BigDecimal.valueOf(distance))
+                .build();
+
+        orderRepository.save(order);
+        mailService.sendOrderConfirmationEmail(order.getId(), dto.getEmail());
     }
 
     @Transactional(readOnly = true)

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -31,13 +30,17 @@ public class Order {
     @Column(precision = 9, scale = 6, nullable = false)
     private BigDecimal targetLongitude;
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal distance;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
-    private Date placedAt = Date.valueOf(LocalDate.now());
+    private LocalDate placedAt = LocalDate.now();
 
-    private Date deliveredAt;
+    private LocalDate deliveredAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private KitType kitType;
 
     @Enumerated(EnumType.STRING)

@@ -4,10 +4,10 @@ import com.mykyda.placholderdrones.DTO.OrderCreateDTO;
 import com.mykyda.placholderdrones.database.entity.Order;
 import com.mykyda.placholderdrones.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,8 +24,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public Page<Order> getAll(@RequestParam Map<String, String> filters) {
-        return orderService.findAllFiltered(filters);
+    public List<Order> getAll(@RequestParam Map<String, String> filters) {
+        return orderService.findAllFiltered(filters).getContent();
     }
 
     @PostMapping
