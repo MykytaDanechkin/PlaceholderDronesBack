@@ -41,22 +41,22 @@ public class OrderService {
     public void save(OrderCreateDTO dto) {
 
         if (!geoService.validateNewYork(
-                dto.getTargetLatitude().doubleValue(),
-                dto.getTargetLongitude().doubleValue())) {
+                dto.getLatitude().doubleValue(),
+                dto.getLongitude().doubleValue())) {
 
             throw new IllegalArgumentException("Location must be inside New York state");
         }
 
         double distance = geoService.calculateDistance(
-                dto.getTargetLatitude().doubleValue(),
-                dto.getTargetLongitude().doubleValue()
+                dto.getLatitude().doubleValue(),
+                dto.getLongitude().doubleValue()
         );
 
         Order order = Order.builder()
                 .id(UUID.randomUUID())
                 .receiverEmail(dto.getEmail())
-                .targetLatitude(dto.getTargetLatitude())
-                .targetLongitude(dto.getTargetLongitude())
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
                 .kitType(dto.getKitType())
                 .orderStatus(OrderStatus.ORDERED)
                 .paymentStatus(PaymentStatus.NOT_PAID)
@@ -79,10 +79,10 @@ public class OrderService {
             spec = spec.and(OrderSpecification
                     .placedAfter(LocalDate.parse(filters.get("after"))));
         }
-        if (filters.containsKey("paymentStatus")) {
-            spec = spec.and(OrderSpecification
-                    .hasPaymentStatus(PaymentStatus.valueOf(filters.get("paymentStatus").toUpperCase())));
-        }
+//        if (filters.containsKey("paymentStatus")) {
+//            spec = spec.and(OrderSpecification
+//                    .hasPaymentStatus(PaymentStatus.valueOf(filters.get("paymentStatus").toUpperCase())));
+//        }
         if (filters.containsKey("orderStatus")) {
             spec = spec.and(OrderSpecification
                     .hasOrderStatus(OrderStatus.valueOf(filters.get("orderStatus").toUpperCase())));

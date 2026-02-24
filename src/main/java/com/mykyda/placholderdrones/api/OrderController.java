@@ -24,7 +24,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<Order> getAll(@RequestParam Map<String, String> filters) {
+    public List<Order> getAllFiltered(@RequestParam Map<String, String> filters) {
         return orderService.findAllFiltered(filters).getContent();
     }
 
@@ -35,7 +35,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> setPayed (@PathVariable UUID id) {
+    public ResponseEntity<String> setPayed(@PathVariable UUID id) {
         orderService.setPaid(id);
         return ResponseEntity.noContent().build();
     }

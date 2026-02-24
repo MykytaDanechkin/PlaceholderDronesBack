@@ -16,9 +16,9 @@ public class OrderCreateDTO {
 
     String email;
 
-    BigDecimal targetLongitude;
+    BigDecimal longitude;
 
-    BigDecimal targetLatitude;
+    BigDecimal latitude;
 
     KitType kitType;
 }

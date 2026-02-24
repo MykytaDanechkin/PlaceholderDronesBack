@@ -25,23 +25,27 @@ public class Order {
     private String receiverEmail;
 
     @Column(precision = 9, scale = 6, nullable = false)
-    private BigDecimal targetLatitude;
+    private BigDecimal latitude;
 
     @Column(precision = 9, scale = 6, nullable = false)
-    private BigDecimal targetLongitude;
+    private BigDecimal longitude;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal distance;
 
+    @Column(nullable = false)
+    private int subtotal;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
-    private LocalDate placedAt = LocalDate.now();
+    private LocalDate timestamp = LocalDate.now();
 
     private LocalDate deliveredAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private KitType kitType;
+    @Builder.Default
+    private KitType kitType = KitType.DEFAULT;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
