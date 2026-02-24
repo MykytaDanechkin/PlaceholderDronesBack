@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+
+  application:
+    name: PlaceholderDrones
+
+  datasource:
+    hikari:
+      auto-commit: true
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:postgres}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    driver-class-name: ${DATASOURCE_DRIVER:org.postgresql.Driver}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+  config:
+    import: optional:file:.env[.properties]
+search:
+  filtered-search-page-size: ${FILTERED_SEARCH_PAGE_SIZE:10}
