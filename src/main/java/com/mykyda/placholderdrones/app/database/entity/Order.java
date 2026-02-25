@@ -34,6 +34,15 @@ public class Order {
     @Column(nullable = false)
     private int subtotal;
 
+    @Column(nullable = false)
+    private double compositeTax;
+
+    @Column(nullable = false)
+    private double taxAmount;
+
+    @Column(nullable = false)
+    private double totalAmount;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private Timestamp timestamp = Timestamp.from(Instant.now());

@@ -32,3 +32,8 @@ placeholder-drones:
     origin:
       latitude: ${ORIGIN_LAT:40.7128}
       longitude: ${ORIGIN_LON:-74.0060}
+  tax:
+    default-tax-rate: ${DEFAULT_TAX_RATE:0.08}
+  files:
+    county-file-name: ${COUNTY_FILES_NAME:ny-counties.geojson}
+    tax-rates-file-name: ${COUNTY_FILES_NAME:county-rates.csv}

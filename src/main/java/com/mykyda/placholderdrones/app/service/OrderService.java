@@ -28,7 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,7 +36,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final GeoService geoService;
+    private final CountyGeoLoader countyGeoLoader;
 
     @Value("${placeholder-drones.search.filtered-search-page-size}")
     private int FILTERED_SEARCH_PAGE_SIZE;
@@ -45,19 +44,22 @@ public class OrderService {
     @Transactional
     public long save(OrderCreateDTO dto) {
 
-        if (!geoService.validateNewYork(
-                dto.getLatitude().doubleValue(),
-                dto.getLongitude().doubleValue())) {
+        var county = countyGeoLoader.findCounty(dto.getLongitude().doubleValue(), dto.getLatitude().doubleValue());
+        var tax = county.getTaxRate();
 
-            throw new IllegalArgumentException("Location must be inside New York state");
-        }
+        var subtotal = dto.getKitType().getSubtotal();
+        var taxAmount = subtotal * tax.doubleValue();
+
         Order order = Order.builder()
                 .receiverEmail(dto.getEmail())
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .kitType(dto.getKitType())
                 .orderStatus(OrderStatus.ORDERED)
-                .subtotal(dto.getKitType().getSubtotal())
+                .subtotal(subtotal)
+                .compositeTax(tax.doubleValue())
+                .taxAmount(taxAmount)
+                .totalAmount(subtotal + taxAmount)
                 .build();
 
         var savedOrder = orderRepository.save(order);
@@ -113,7 +115,10 @@ public class OrderService {
 
     @Transactional
     public List<Long> parseAndSave(MultipartFile file) throws Exception {
+
         List<Order> result = new ArrayList<>();
+        int skipped = 0;
+
         try (BufferedReader reader =
                      new BufferedReader(new InputStreamReader(file.getInputStream()))) {
 
@@ -127,29 +132,53 @@ public class OrderService {
                     continue;
                 }
 
-                var columns = line.split(",");
-                var formatter =
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
-                var ldt = LocalDateTime.parse(columns[3], formatter);
-                var timestamp = Timestamp.from(ldt.toInstant(ZoneOffset.UTC));
+                try {
 
-                var subtotal = (int) Float.parseFloat(columns[4]);
+                    var columns = line.split(",");
 
-                Order order = Order.builder()
-                        .longitude(BigDecimal.valueOf(Double.parseDouble(columns[1])))
-                        .latitude(BigDecimal.valueOf(Double.parseDouble(columns[2])))
-                        .timestamp(timestamp)
-                        .subtotal(subtotal)
-                        .kitType(KitType.fromSubtotal(subtotal))
-                        .orderStatus(OrderStatus.ORDERED)
-                        .build();
-                result.add(order);
+                    var formatter =
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+
+                    var ldt = LocalDateTime.parse(columns[3], formatter);
+                    var timestamp = Timestamp.from(ldt.toInstant(ZoneOffset.UTC));
+
+                    var subtotal = (int) Float.parseFloat(columns[4]);
+                    var latitude = BigDecimal.valueOf(Double.parseDouble(columns[2]));
+                    var longitude = BigDecimal.valueOf(Double.parseDouble(columns[1]));
+
+                    var county = countyGeoLoader
+                            .findCounty(longitude.doubleValue(), latitude.doubleValue());
+
+                    var tax = county.getTaxRate();
+                    var taxAmount = subtotal * tax.doubleValue();
+
+                    Order order = Order.builder()
+                            .longitude(longitude)
+                            .latitude(latitude)
+                            .timestamp(timestamp)
+                            .subtotal(subtotal)
+                            .compositeTax(tax.doubleValue())
+                            .taxAmount(taxAmount)
+                            .totalAmount(subtotal + taxAmount)
+                            .kitType(KitType.fromSubtotal(subtotal))
+                            .orderStatus(OrderStatus.ORDERED)
+                            .build();
+
+                    result.add(order);
+
+                } catch (Exception e) {
+                    skipped++;
+                    log.debug("Skipping invalid row: {}", line);
+                }
             }
         }
+
         if (!result.isEmpty()) {
             var saved = orderRepository.saveAll(result);
-            return saved.stream().map(Order::getId).collect(Collectors.toList());
+            log.info("Import finished. Saved: {}, Skipped: {}", saved.size(), skipped);
+            return saved.stream().map(Order::getId).toList();
         }
-        return null;
+
+        return List.of();
     }
 }
