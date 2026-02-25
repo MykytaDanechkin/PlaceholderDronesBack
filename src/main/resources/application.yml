@@ -19,6 +19,10 @@ spring:
     hibernate:
       ddl-auto: update
 
+  security:
+    cors:
+      allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+
   config:
     import: optional:file:.env[.properties]
 placeholder-drones:

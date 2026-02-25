@@ -1,9 +1,9 @@
-package com.mykyda.placholderdrones.database.specification;
+package com.mykyda.placholderdrones.app.database.specification;
 
-import com.mykyda.placholderdrones.database.entity.KitType;
-import com.mykyda.placholderdrones.database.entity.Order;
-import com.mykyda.placholderdrones.database.entity.OrderStatus;
-import com.mykyda.placholderdrones.database.entity.PaymentStatus;
+import com.mykyda.placholderdrones.app.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.entity.PaymentStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;

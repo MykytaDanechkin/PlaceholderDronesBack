@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.service;
+package com.mykyda.placholderdrones.app.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

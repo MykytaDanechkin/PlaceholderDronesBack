@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.exception;
+package com.mykyda.placholderdrones.app.exception;
 
 public class EntityNotFoundException extends RuntimeException {
     public EntityNotFoundException(String message) {

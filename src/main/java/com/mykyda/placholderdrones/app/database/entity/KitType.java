@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.database.entity;
+package com.mykyda.placholderdrones.app.database.entity;
 
 public enum KitType {
     DEFAULT,

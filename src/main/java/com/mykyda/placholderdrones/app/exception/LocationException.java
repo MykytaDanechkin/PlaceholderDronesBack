@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.exception;
+package com.mykyda.placholderdrones.app.exception;
 
 public class LocationException extends RuntimeException {
     public LocationException(String message) {

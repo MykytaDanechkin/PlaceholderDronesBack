@@ -1,13 +1,13 @@
-package com.mykyda.placholderdrones.service;
+package com.mykyda.placholderdrones.app.service;
 
-import com.mykyda.placholderdrones.DTO.OrderCreateDTO;
-import com.mykyda.placholderdrones.database.entity.KitType;
-import com.mykyda.placholderdrones.database.entity.Order;
-import com.mykyda.placholderdrones.database.entity.OrderStatus;
-import com.mykyda.placholderdrones.database.entity.PaymentStatus;
-import com.mykyda.placholderdrones.database.repository.OrderRepository;
-import com.mykyda.placholderdrones.database.specification.OrderSpecification;
-import com.mykyda.placholderdrones.exception.EntityNotFoundException;
+import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.entity.PaymentStatus;
+import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
+import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
+import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

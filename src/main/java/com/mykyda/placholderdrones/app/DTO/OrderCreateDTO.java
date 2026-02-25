@@ -1,6 +1,6 @@
-package com.mykyda.placholderdrones.DTO;
+package com.mykyda.placholderdrones.app.DTO;
 
-import com.mykyda.placholderdrones.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.entity.KitType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

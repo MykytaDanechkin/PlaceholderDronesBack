@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.exception;
+package com.mykyda.placholderdrones.app.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;

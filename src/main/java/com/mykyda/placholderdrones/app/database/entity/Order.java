@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.database.entity;
+package com.mykyda.placholderdrones.app.database.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

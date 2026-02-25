@@ -1,8 +1,8 @@
-package com.mykyda.placholderdrones.api;
+package com.mykyda.placholderdrones.app.api;
 
-import com.mykyda.placholderdrones.DTO.OrderCreateDTO;
-import com.mykyda.placholderdrones.database.entity.Order;
-import com.mykyda.placholderdrones.service.OrderService;
+import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

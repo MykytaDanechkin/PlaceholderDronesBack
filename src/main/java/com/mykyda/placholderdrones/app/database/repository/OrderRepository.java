@@ -1,6 +1,6 @@
-package com.mykyda.placholderdrones.database.repository;
+package com.mykyda.placholderdrones.app.database.repository;
 
-import com.mykyda.placholderdrones.database.entity.Order;
+import com.mykyda.placholderdrones.app.database.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
