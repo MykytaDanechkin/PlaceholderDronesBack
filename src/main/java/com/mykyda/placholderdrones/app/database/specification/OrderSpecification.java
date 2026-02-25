@@ -3,7 +3,6 @@ package com.mykyda.placholderdrones.app.database.specification;
 import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
-import com.mykyda.placholderdrones.app.database.entity.PaymentStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -13,11 +12,6 @@ public class OrderSpecification {
     public static Specification<Order> hasEmail(String email) {
         return (root, query, builder) ->
                 builder.equal(root.get("receiverEmail"), email);
-    }
-
-    public static Specification<Order> hasPaymentStatus(PaymentStatus paymentStatus) {
-        return (root, query, builder) ->
-                builder.equal(root.get("paymentStatus"), paymentStatus);
     }
 
     public static Specification<Order> hasOrderStatus(OrderStatus orderStatus) {

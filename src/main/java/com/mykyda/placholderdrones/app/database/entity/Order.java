@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -19,9 +19,10 @@ import java.util.UUID;
 public class Order {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String receiverEmail;
 
     @Column(precision = 9, scale = 6, nullable = false)
@@ -30,17 +31,12 @@ public class Order {
     @Column(precision = 9, scale = 6, nullable = false)
     private BigDecimal longitude;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal distance;
-
     @Column(nullable = false)
     private int subtotal;
 
     @Builder.Default
     @Column(nullable = false, updatable = false)
-    private LocalDate timestamp = LocalDate.now();
-
-    private LocalDate deliveredAt;
+    private Timestamp timestamp = Timestamp.from(Instant.now());
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -49,9 +45,4 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
-
-    private int deliveryProgress;
 }

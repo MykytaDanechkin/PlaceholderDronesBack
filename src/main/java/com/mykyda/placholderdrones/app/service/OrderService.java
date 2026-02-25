@@ -4,7 +4,6 @@ import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
-import com.mykyda.placholderdrones.app.database.entity.PaymentStatus;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
@@ -16,12 +15,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,15 +37,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final MailService mailService;
-
     private final GeoService geoService;
 
     @Value("${placeholder-drones.search.filtered-search-page-size}")
     private int FILTERED_SEARCH_PAGE_SIZE;
 
     @Transactional
-    public void save(OrderCreateDTO dto) {
+    public long save(OrderCreateDTO dto) {
 
         if (!geoService.validateNewYork(
                 dto.getLatitude().doubleValue(),
@@ -46,25 +51,17 @@ public class OrderService {
 
             throw new IllegalArgumentException("Location must be inside New York state");
         }
-
-        double distance = geoService.calculateDistance(
-                dto.getLatitude().doubleValue(),
-                dto.getLongitude().doubleValue()
-        );
-
         Order order = Order.builder()
-                .id(UUID.randomUUID())
                 .receiverEmail(dto.getEmail())
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .kitType(dto.getKitType())
                 .orderStatus(OrderStatus.ORDERED)
-                .paymentStatus(PaymentStatus.NOT_PAID)
-                .distance(BigDecimal.valueOf(distance))
+                .subtotal(dto.getKitType().getSubtotal())
                 .build();
 
-        orderRepository.save(order);
-        mailService.sendOrderConfirmationEmail(order.getId(), dto.getEmail());
+        var savedOrder = orderRepository.save(order);
+        return savedOrder.getId();
     }
 
     @Transactional(readOnly = true)
@@ -79,10 +76,6 @@ public class OrderService {
             spec = spec.and(OrderSpecification
                     .placedAfter(LocalDate.parse(filters.get("after"))));
         }
-//        if (filters.containsKey("paymentStatus")) {
-//            spec = spec.and(OrderSpecification
-//                    .hasPaymentStatus(PaymentStatus.valueOf(filters.get("paymentStatus").toUpperCase())));
-//        }
         if (filters.containsKey("orderStatus")) {
             spec = spec.and(OrderSpecification
                     .hasOrderStatus(OrderStatus.valueOf(filters.get("orderStatus").toUpperCase())));
@@ -105,18 +98,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Order> findAllByReceiverEmail(String email) {
-        return orderRepository.findAllByReceiverEmail(email);
-    }
-
-    @Transactional(readOnly = true)
-    public Order findById(UUID id) {
+    public Order findById(long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
     }
 
     @Transactional
-    public void deleteById(UUID id) {
+    public void deleteById(long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
 
@@ -124,14 +112,44 @@ public class OrderService {
     }
 
     @Transactional
-    public void setPaid(UUID id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
-        order.setPaymentStatus(PaymentStatus.PAID);
-        order.setOrderStatus(OrderStatus.ORDERED);
-        mailService.sendPaymentSuccessConfirmation(
-                order.getId(),
-                order.getReceiverEmail()
-        );
+    public List<Long> parseAndSave(MultipartFile file) throws Exception {
+        List<Order> result = new ArrayList<>();
+        try (BufferedReader reader =
+                     new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+
+            String line;
+            boolean isFirstLine = true;
+
+            while ((line = reader.readLine()) != null) {
+
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
+                }
+
+                var columns = line.split(",");
+                var formatter =
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+                var ldt = LocalDateTime.parse(columns[3], formatter);
+                var timestamp = Timestamp.from(ldt.toInstant(ZoneOffset.UTC));
+
+                var subtotal = (int) Float.parseFloat(columns[4]);
+
+                Order order = Order.builder()
+                        .longitude(BigDecimal.valueOf(Double.parseDouble(columns[1])))
+                        .latitude(BigDecimal.valueOf(Double.parseDouble(columns[2])))
+                        .timestamp(timestamp)
+                        .subtotal(subtotal)
+                        .kitType(KitType.fromSubtotal(subtotal))
+                        .orderStatus(OrderStatus.ORDERED)
+                        .build();
+                result.add(order);
+            }
+        }
+        if (!result.isEmpty()) {
+            var saved = orderRepository.saveAll(result);
+            return saved.stream().map(Order::getId).collect(Collectors.toList());
+        }
+        return null;
     }
 }

@@ -4,12 +4,13 @@ import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping("/{id}")
-    public Order getById(@PathVariable UUID id) {
+    public Order getById(@PathVariable long id) {
         return orderService.findById(id);
     }
 
@@ -30,19 +31,18 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<String> postOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
-        orderService.save(orderCreateDTO);
-        return ResponseEntity.noContent().build();
+        var id = orderService.save(orderCreateDTO);
+        return new ResponseEntity<>(String.valueOf(id), HttpStatus.CREATED);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<String> setPayed(@PathVariable UUID id) {
-        orderService.setPaid(id);
-        return ResponseEntity.noContent().build();
+    @PostMapping(value = "/import", consumes = "multipart/form-data")
+    public ResponseEntity<String> importOrders(@RequestParam("file") MultipartFile file) throws Exception {
+        var ids = orderService.parseAndSave(file);
+        return new ResponseEntity<>(ids.toString(), HttpStatus.CREATED);
     }
-
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteOrder(@PathVariable UUID id) {
+    public ResponseEntity<String> deleteOrder(@PathVariable long id) {
         orderService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
