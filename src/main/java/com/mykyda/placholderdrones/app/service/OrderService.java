@@ -1,6 +1,7 @@
 package com.mykyda.placholderdrones.app.service;
 
 import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
@@ -55,7 +56,7 @@ public class OrderService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .kitType(dto.getKitType())
-                .orderStatus(OrderStatus.ORDERED)
+                .orderStatus(OrderStatus.WAITING_FOR_PAYMENT)
                 .subtotal(subtotal)
                 .compositeTax(tax.doubleValue())
                 .taxAmount(taxAmount)
@@ -180,5 +181,14 @@ public class OrderService {
         }
 
         return List.of();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderStatsDTO getStats() {
+        return OrderStatsDTO.builder()
+                .totalOrders(orderRepository.count())
+                .totalTax(orderRepository.sumTax())
+                .totalPending(orderRepository.getSumOrdersByOrderStatus(OrderStatus.WAITING_FOR_PAYMENT))
+                .build();
     }
 }

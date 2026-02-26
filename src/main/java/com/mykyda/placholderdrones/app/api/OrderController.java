@@ -1,6 +1,7 @@
 package com.mykyda.placholderdrones.app.api;
 
 import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,10 @@ public class OrderController {
     public ResponseEntity<String> deleteOrder(@PathVariable long id) {
         orderService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/stats")
+    public OrderStatsDTO getStats() {
+        return orderService.getStats();
     }
 }
