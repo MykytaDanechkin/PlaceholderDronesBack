@@ -1,6 +1,7 @@
 package com.mykyda.placholderdrones.app.service;
 
 import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
@@ -8,6 +9,7 @@ import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
+import com.mykyda.placholderdrones.app.exception.OrderAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,11 +48,10 @@ public class OrderService {
     @Transactional
     public long save(OrderCreateDTO dto) {
 
-        var county = countyGeoLoader.findCounty(dto.getLongitude().doubleValue(), dto.getLatitude().doubleValue());
-        var tax = county.getTaxRate();
-
-        var subtotal = dto.getKitType().getSubtotal();
-        var taxAmount = subtotal * tax.doubleValue();
+        var county = countyGeoLoader.findCounty(
+                dto.getLongitude().doubleValue(),
+                dto.getLatitude().doubleValue()
+        );
 
         Order order = Order.builder()
                 .receiverEmail(dto.getEmail())
@@ -57,14 +59,15 @@ public class OrderService {
                 .longitude(dto.getLongitude())
                 .kitType(dto.getKitType())
                 .orderStatus(OrderStatus.WAITING_FOR_PAYMENT)
-                .subtotal(subtotal)
-                .compositeTax(tax.doubleValue())
-                .taxAmount(taxAmount)
-                .totalAmount(subtotal + taxAmount)
                 .build();
 
-        var savedOrder = orderRepository.save(order);
-        return savedOrder.getId();
+        recountTaxes(
+                order,
+                county.getTaxRate(),
+                dto.getKitType().getSubtotal()
+        );
+
+        return orderRepository.save(order).getId();
     }
 
     @Transactional(readOnly = true)
@@ -115,7 +118,7 @@ public class OrderService {
     }
 
     @Transactional
-    public List<Long> parseAndSave(MultipartFile file) throws Exception {
+    public void parseAndSave(MultipartFile file) throws Exception {
 
         List<Order> result = new ArrayList<>();
         int skipped = 0;
@@ -143,30 +146,34 @@ public class OrderService {
                     var ldt = LocalDateTime.parse(columns[3], formatter);
                     var timestamp = Timestamp.from(ldt.toInstant(ZoneOffset.UTC));
 
-                    var subtotal = (int) Float.parseFloat(columns[4]);
-                    var latitude = BigDecimal.valueOf(Double.parseDouble(columns[2]));
-                    var longitude = BigDecimal.valueOf(Double.parseDouble(columns[1]));
+                    var subtotal = new BigDecimal(columns[4]);
+                    var latitude = new BigDecimal(columns[2]);
+                    var longitude = new BigDecimal(columns[1]);
 
                     var county = countyGeoLoader
                             .findCounty(longitude.doubleValue(), latitude.doubleValue());
 
                     var tax = county.getTaxRate();
-                    var taxAmount = subtotal * tax.doubleValue();
+                    var taxAmount = subtotal.multiply(tax);
 
                     Order order = Order.builder()
                             .longitude(longitude)
                             .latitude(latitude)
                             .timestamp(timestamp)
                             .subtotal(subtotal)
-                            .compositeTax(tax.doubleValue())
+                            .compositeTax(tax)
                             .taxAmount(taxAmount)
-                            .totalAmount(subtotal + taxAmount)
+                            .totalAmount(subtotal.add(taxAmount))
                             .kitType(KitType.fromSubtotal(subtotal))
                             .orderStatus(OrderStatus.ORDERED)
                             .build();
 
                     result.add(order);
-
+                    if (result.size() == 500) {
+                        orderRepository.saveAll(result);
+                        log.debug("batch saved");
+                        result.clear();
+                    }
                 } catch (Exception e) {
                     skipped++;
                     log.debug("Skipping invalid row: {}", line);
@@ -177,10 +184,7 @@ public class OrderService {
         if (!result.isEmpty()) {
             var saved = orderRepository.saveAll(result);
             log.info("Import finished. Saved: {}, Skipped: {}", saved.size(), skipped);
-            return saved.stream().map(Order::getId).toList();
         }
-
-        return List.of();
     }
 
     @Transactional(readOnly = true)
@@ -190,5 +194,67 @@ public class OrderService {
                 .totalTax(orderRepository.sumTax())
                 .totalPending(orderRepository.getSumOrdersByOrderStatus(OrderStatus.WAITING_FOR_PAYMENT))
                 .build();
+    }
+
+    @Transactional
+    public void put(long id, OrderPutDTO dto) {
+
+        var order = orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
+
+        if (!order.getOrderStatus().equals(OrderStatus.ORDERED)
+                && !order.getOrderStatus().equals(OrderStatus.WAITING_FOR_PAYMENT)) {
+            throw new OrderAccessException("Can't change processed order");
+        }
+
+        boolean changed = false;
+
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
+            var county = countyGeoLoader.findCounty(
+                    dto.getLongitude().doubleValue(),
+                    dto.getLatitude().doubleValue()
+            );
+            order.setLatitude(dto.getLatitude());
+            order.setLongitude(dto.getLongitude());
+            recountTaxes(
+                    order,
+                    county.getTaxRate(),
+                    order.getKitType().getSubtotal()
+            );
+            changed = true;
+        }
+        if (dto.getKitType() != null && dto.getKitType() != order.getKitType()) {
+            order.setKitType(dto.getKitType());
+            recountTaxes(
+                    order,
+                    order.getCompositeTax(),
+                    dto.getKitType().getSubtotal()
+            );
+            changed = true;
+        }
+        if (dto.getReceiverEmail() != null && !dto.getReceiverEmail().isBlank()) {
+            order.setReceiverEmail(dto.getReceiverEmail());
+            changed = true;
+        }
+
+        if (changed) {
+            orderRepository.save(order);
+        }
+    }
+
+    private void recountTaxes(Order order, BigDecimal taxRate, BigDecimal subtotal) {
+
+        BigDecimal taxAmount = subtotal
+                .multiply(taxRate)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal total = subtotal
+                .add(taxAmount)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        order.setSubtotal(subtotal);
+        order.setCompositeTax(taxRate);
+        order.setTaxAmount(taxAmount);
+        order.setTotalAmount(total);
     }
 }

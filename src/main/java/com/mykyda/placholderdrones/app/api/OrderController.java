@@ -1,6 +1,7 @@
 package com.mykyda.placholderdrones.app.api;
 
 import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.service.OrderService;
@@ -30,6 +31,11 @@ public class OrderController {
         return orderService.findAllFiltered(filters).getContent();
     }
 
+    @GetMapping("/stats")
+    public OrderStatsDTO getStats() {
+        return orderService.getStats();
+    }
+
     @PostMapping
     public ResponseEntity<String> postOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
         var id = orderService.save(orderCreateDTO);
@@ -38,8 +44,14 @@ public class OrderController {
 
     @PostMapping(value = "/import", consumes = "multipart/form-data")
     public ResponseEntity<String> importOrders(@RequestParam("file") MultipartFile file) throws Exception {
-        var ids = orderService.parseAndSave(file);
-        return new ResponseEntity<>(ids.toString(), HttpStatus.CREATED);
+        orderService.parseAndSave(file);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateOrder(@PathVariable long id, @RequestBody OrderPutDTO orderPutDTO) {
+        orderService.put(id,orderPutDTO);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
@@ -48,8 +60,4 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/stats")
-    public OrderStatsDTO getStats() {
-        return orderService.getStats();
-    }
 }

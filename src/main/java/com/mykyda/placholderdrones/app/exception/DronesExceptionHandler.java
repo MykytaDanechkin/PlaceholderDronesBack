@@ -36,4 +36,10 @@ public class DronesExceptionHandler {
         log.warn(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(OrderAccessException.class)
+    public ResponseEntity<String> handleOrderAccessException(OrderAccessException ex) {
+        log.warn(ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

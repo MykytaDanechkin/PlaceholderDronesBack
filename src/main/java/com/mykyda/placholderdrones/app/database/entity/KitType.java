@@ -2,32 +2,34 @@ package com.mykyda.placholderdrones.app.database.entity;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Objects;
 
 @Getter
 public enum KitType {
 
-    DEFAULT(22),
-    DEFAULT_PLUS(25),
+    DEFAULT(new BigDecimal("22.00")),
+    DEFAULT_PLUS(new BigDecimal("25.00")),
 
-    SILVER(45),
-    SILVER_PLUS(50),
+    SILVER(new BigDecimal("45.00")),
+    SILVER_PLUS(new BigDecimal("50.00")),
 
-    GOLD(108),
-    GOLD_PLUS(120),
+    GOLD(new BigDecimal("108.00")),
+    GOLD_PLUS(new BigDecimal("120.00")),
 
-    PLATINUM(180),
-    PLATINUM_PLUS(200);
+    PLATINUM(new BigDecimal("180.00")),
+    PLATINUM_PLUS(new BigDecimal("200.00"));
 
-    private final int subtotal;
+    private final BigDecimal subtotal;
 
-    KitType(int subtotal) {
+    KitType(BigDecimal subtotal) {
         this.subtotal = subtotal;
     }
 
-    public static KitType fromSubtotal(int subtotal) {
+    public static KitType fromSubtotal(BigDecimal subtotal) {
         return Arrays.stream(values())
-                .filter(k -> k.subtotal == subtotal)
+                .filter(k -> Objects.equals(k.subtotal.doubleValue(), subtotal.doubleValue()))
                 .findFirst()
                 .orElseThrow(() ->
                         new IllegalArgumentException("Unknown kit subtotal: " + subtotal)

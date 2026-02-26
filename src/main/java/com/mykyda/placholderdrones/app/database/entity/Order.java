@@ -32,16 +32,16 @@ public class Order {
     private BigDecimal longitude;
 
     @Column(nullable = false)
-    private int subtotal;
+    private BigDecimal subtotal;
 
     @Column(nullable = false)
-    private double compositeTax;
+    private BigDecimal compositeTax;
 
     @Column(nullable = false)
-    private double taxAmount;
+    private BigDecimal taxAmount;
 
     @Column(nullable = false)
-    private double totalAmount;
+    private BigDecimal totalAmount;
 
     @Builder.Default
     @Column(nullable = false, updatable = false)
