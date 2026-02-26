@@ -23,6 +23,21 @@ spring:
     cors:
       allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
 
+
+    jwt:
+      access-token:
+        secret: ${ACCESS_TOKEN_SECRET:secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret}
+        exp-min: ${ACCESS_TOKEN_EXP_MIN:30}
+      cookie:
+        same-site: ${COOKIE_SAME_SITE:Lax}
+        secure: ${COOKIE_SECURE:false}
+        http-only: ${COOKIE_HTTP_ONLY:true}
+        path: ${COOKIE_PATH:/}
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:localhost:9000}
+
   config:
     import: optional:file:.env[.properties]
 placeholder-drones:
