@@ -9,7 +9,6 @@ import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
-import com.mykyda.placholderdrones.app.exception.OrderAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -202,11 +201,6 @@ public class OrderService {
         var order = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
 
-        if (!order.getOrderStatus().equals(OrderStatus.ORDERED)
-                && !order.getOrderStatus().equals(OrderStatus.WAITING_FOR_PAYMENT)) {
-            throw new OrderAccessException("Can't change processed order");
-        }
-
         boolean changed = false;
 
         if (dto.getLatitude() != null && dto.getLongitude() != null) {
@@ -236,6 +230,10 @@ public class OrderService {
             order.setReceiverEmail(dto.getReceiverEmail());
             changed = true;
         }
+        if (dto.getOrderStatus() != null) {
+            order.setOrderStatus(dto.getOrderStatus());
+            changed = true;
+        }
 
         if (changed) {
             orderRepository.save(order);
@@ -256,5 +254,13 @@ public class OrderService {
         order.setCompositeTax(taxRate);
         order.setTaxAmount(taxAmount);
         order.setTotalAmount(total);
+    }
+
+    public void setPayedById(long id) {
+        var  order = orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
+        if (order.getOrderStatus().equals(OrderStatus.WAITING_FOR_PAYMENT)) {
+            order.setOrderStatus(OrderStatus.ORDERED);
+            orderRepository.save(order);
+        }
     }
 }

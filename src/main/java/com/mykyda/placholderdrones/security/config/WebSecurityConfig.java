@@ -38,25 +38,22 @@ class WebSecurityConfig {
 
     @Bean
     @Order(1)
-    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
-                                               JwtFilter jwtFilter) {
+    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtFilter jwtFilter){
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/orders")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/orders")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/orders/import")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/orders/**")
-                        .hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.GET, "/orders/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/orders").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/orders/pay/*").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/orders/import").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/orders/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/orders/*").hasRole("ADMIN")
+
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 

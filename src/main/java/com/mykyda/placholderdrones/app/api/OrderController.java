@@ -48,6 +48,12 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(value = "/pay/{id}")
+    public ResponseEntity<String> payForOrder(@PathVariable("id") long id) {
+        orderService.setPayedById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<String> updateOrder(@PathVariable long id, @RequestBody OrderPutDTO orderPutDTO) {
         orderService.put(id,orderPutDTO);

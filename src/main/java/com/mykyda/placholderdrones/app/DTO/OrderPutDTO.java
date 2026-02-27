@@ -1,6 +1,7 @@
 package com.mykyda.placholderdrones.app.DTO;
 
 import com.mykyda.placholderdrones.app.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,5 +22,7 @@ public class OrderPutDTO {
     BigDecimal longitude;
 
     KitType kitType;
+
+    OrderStatus orderStatus;
 
 }
