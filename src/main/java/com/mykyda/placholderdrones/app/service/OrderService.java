@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,42 +72,55 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<Order> findAllFiltered(Map<String, String> filters) {
+
         Specification<Order> spec = Specification.allOf();
 
         if (filters.containsKey("before")) {
             spec = spec.and(OrderSpecification
                     .placeBefore(LocalDate.parse(filters.get("before"))));
         }
+
         if (filters.containsKey("after")) {
             spec = spec.and(OrderSpecification
                     .placedAfter(LocalDate.parse(filters.get("after"))));
         }
+
         if (filters.containsKey("orderStatus")) {
             spec = spec.and(OrderSpecification
                     .hasOrderStatus(OrderStatus.valueOf(filters.get("orderStatus").toUpperCase())));
         }
+
         if (filters.containsKey("email")) {
             spec = spec.and(OrderSpecification
                     .hasEmail(filters.get("email")));
         }
+
         if (filters.containsKey("kitType")) {
             spec = spec.and(OrderSpecification
                     .hasKitType(KitType.valueOf(filters.get("kitType").toUpperCase())));
         }
 
-        var page = 0;
-        if (filters.get("page") != null && !filters.get("page").isEmpty()) {
-            page = Integer.parseInt(filters.get("page"));
+        int page = filters.containsKey("page") && !filters.get("page").isEmpty()
+                ? Integer.parseInt(filters.get("page"))
+                : 0;
+
+        int size = filters.containsKey("size") && !filters.get("size").isEmpty()
+                ? Integer.parseInt(filters.get("size"))
+                : FILTERED_SEARCH_PAGE_SIZE;
+
+        Sort sort = Sort.unsorted();
+
+        if (filters.containsKey("sort") && !filters.get("sort").isEmpty()) {
+            String[] sortParams = filters.get("sort").split(",");
+            String field = sortParams[0];
+            String direction = sortParams.length > 1 ? sortParams[1] : "asc";
+
+            sort = direction.equalsIgnoreCase("desc")
+                    ? Sort.by(field).descending()
+                    : Sort.by(field).ascending();
         }
 
-        var size = 0;
-        if (filters.get("size") != null && !filters.get("size").isEmpty()) {
-            size = Integer.parseInt(filters.get("size"));
-        } else {
-            size = FILTERED_SEARCH_PAGE_SIZE;
-        }
-
-        return orderRepository.findAll(spec, PageRequest.of(page, size));
+        return orderRepository.findAll(spec, PageRequest.of(page, size, sort));
     }
 
     @Transactional(readOnly = true)
