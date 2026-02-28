@@ -59,6 +59,7 @@ public class OrderController {
     @PostMapping(value = "/pay/{id}")
     public ResponseEntity<String> payForOrder(@PathVariable("id") long id) {
         orderService.setPayedById(id);
+        deliveryService.startDelivery(id);
         return ResponseEntity.noContent().build();
     }
 
