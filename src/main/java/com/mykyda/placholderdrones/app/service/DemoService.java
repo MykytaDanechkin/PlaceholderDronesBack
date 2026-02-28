@@ -42,6 +42,7 @@ public class DemoService {
                 .subtotal(order.getSubtotal())
                 .kitType(order.getKitType())
                 .taxAmount(order.getTaxAmount())
+                .timestamp(order.getTimestamp())
                 .build();
     }
 }
