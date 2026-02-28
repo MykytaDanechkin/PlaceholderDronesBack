@@ -1,5 +1,6 @@
 package com.mykyda.placholderdrones.app.service;
 
+import com.mykyda.placholderdrones.app.database.entity.Drone;
 import com.mykyda.placholderdrones.app.database.entity.DroneLog;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.enums.DeliveryStatus;
@@ -98,6 +99,47 @@ public class DeliveryService {
                 }
                 droneService.update(drone);
             }
+        }
+    }
+
+    @Transactional
+    public void progressReturn(List<Drone> drones) {
+        for (Drone drone : drones) {
+
+            int newProgress = drone.getProgress() + 10;
+
+            Order lastOrder = orderService.findById(drone.getLastOrderId());
+
+            BigDecimal startLat = lastOrder.getLatitude();
+            BigDecimal startLon = lastOrder.getLongitude();
+
+            if (newProgress < 100) {
+
+                BigDecimal progressFactor = BigDecimal.valueOf(newProgress)
+                        .divide(BigDecimal.valueOf(100));
+
+                BigDecimal deltaLat = ORIGIN_LATITUDE.subtract(startLat);
+                BigDecimal deltaLon = ORIGIN_LONGITUDE.subtract(startLon);
+
+                BigDecimal newLat = startLat
+                        .add(deltaLat.multiply(progressFactor));
+
+                BigDecimal newLon = startLon
+                        .add(deltaLon.multiply(progressFactor));
+
+                drone.setCurrentLatitude(newLat);
+                drone.setCurrentLongitude(newLon);
+                drone.setProgress(newProgress);
+
+            } else {
+                drone.setStatus(DroneStatus.FREE);
+                drone.setProgress(0);
+
+                drone.setCurrentLatitude(ORIGIN_LATITUDE);
+                drone.setCurrentLongitude(ORIGIN_LONGITUDE);
+            }
+
+            droneService.update(drone);
         }
     }
 }

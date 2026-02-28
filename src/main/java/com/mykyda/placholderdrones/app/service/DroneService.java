@@ -10,7 +10,6 @@ import com.mykyda.placholderdrones.app.database.repository.DroneLogRepository;
 import com.mykyda.placholderdrones.app.database.repository.DroneRepository;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +26,6 @@ public class DroneService {
     private final DroneLogRepository droneLogRepository;
 
     private final OrderService orderService;
-
-    @Value("${placeholder-drones.delivery.origin.latitude}")
-    private BigDecimal ORIGIN_LATITUDE;
-
-    @Value("${placeholder-drones.delivery.origin.longitude}")
-    private BigDecimal ORIGIN_LONGITUDE;
 
     public List<Drone> getAll() {
         return droneRepository.findAll();
@@ -57,7 +50,10 @@ public class DroneService {
                         .status(log.getDeliveryStatus())
                         .finishedAt(log.getFinishedAt())
                         .build()));
-        var currentOrder = orderService.findById(drone.getLastOrderId());
+        Order currentOrder = null;
+        if (drone.getLastOrderId() != null) {
+            currentOrder = orderService.getById(drone.getLastOrderId());
+        }
         return DroneDTO.builder()
                 .logs(logs)
                 .status(drone.getStatus())
@@ -81,47 +77,6 @@ public class DroneService {
     @Transactional(readOnly = true)
     public List<Drone> getAllReturning() {
         return droneRepository.getAllByStatusIs(DroneStatus.RETURNING);
-    }
-
-    @Transactional
-    public void progressReturn(List<Drone> drones) {
-        for (Drone drone : drones) {
-
-            int newProgress = drone.getProgress() + 10;
-
-            Order lastOrder = orderService.findById(drone.getLastOrderId());
-
-            BigDecimal startLat = lastOrder.getLatitude();
-            BigDecimal startLon = lastOrder.getLongitude();
-
-            if (newProgress < 100) {
-
-                BigDecimal progressFactor = BigDecimal.valueOf(newProgress)
-                        .divide(BigDecimal.valueOf(100));
-
-                BigDecimal deltaLat = ORIGIN_LATITUDE.subtract(startLat);
-                BigDecimal deltaLon = ORIGIN_LONGITUDE.subtract(startLon);
-
-                BigDecimal newLat = startLat
-                        .add(deltaLat.multiply(progressFactor));
-
-                BigDecimal newLon = startLon
-                        .add(deltaLon.multiply(progressFactor));
-
-                drone.setCurrentLatitude(newLat);
-                drone.setCurrentLongitude(newLon);
-                drone.setProgress(newProgress);
-
-            } else {
-                drone.setStatus(DroneStatus.FREE);
-                drone.setProgress(0);
-
-                drone.setCurrentLatitude(ORIGIN_LATITUDE);
-                drone.setCurrentLongitude(ORIGIN_LONGITUDE);
-            }
-
-            droneRepository.save(drone);
-        }
     }
 
     @Transactional

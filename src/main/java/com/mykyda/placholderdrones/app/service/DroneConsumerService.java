@@ -32,7 +32,7 @@ public class DroneConsumerService {
         if (drones.isEmpty()){
             log.debug("No returning drones");
         } else {
-            droneService.progressReturn(drones);
+            deliveryService.progressReturn(drones);
         }
     }
 }

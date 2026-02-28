@@ -3,13 +3,10 @@ package com.mykyda.placholderdrones.app.service;
 import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
-import com.mykyda.placholderdrones.app.DTO.demo.DroneDTO;
-import com.mykyda.placholderdrones.app.DTO.demo.OrderDemoDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.PageResponse;
 import com.mykyda.placholderdrones.app.database.enums.KitType;
 import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
-import com.mykyda.placholderdrones.app.database.repository.DroneRepository;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
@@ -43,8 +40,6 @@ import java.util.Map;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
-    private final DroneRepository droneRepository;
 
     private final CountyGeoLoader countyGeoLoader;
 
@@ -140,40 +135,17 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order findById(long id) {
+    public Order findById(Long id) {
         return orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
     }
 
     @Transactional(readOnly = true)
-    public OrderDemoDTO demoById(long id) {
-        var order = orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
-        var optionalDrone = droneRepository.findByLastOrderId(id);
-        DroneDTO droneGet = null;
-        if (optionalDrone.isPresent()) {
-            var drone = optionalDrone.get();
-            droneGet = DroneDTO.builder()
-                    .currentLatitude(drone.getCurrentLatitude())
-                    .currentLongitude(drone.getCurrentLongitude())
-                    .progress(drone.getProgress())
-                    .status(drone.getStatus())
-                    .build();
-        }
-        return OrderDemoDTO.builder()
-                .id(order.getId())
-                .orderStatus(order.getOrderStatus())
-                .receiverEmail(order.getReceiverEmail())
-                .latitude(order.getLatitude())
-                .longitude(order.getLongitude())
-                .drone(droneGet)
-                .compositeTax(order.getCompositeTax())
-                .subtotal(order.getSubtotal())
-                .kitType(order.getKitType())
-                .taxAmount(order.getTaxAmount())
-                .build();
+    public Order getById(Long id) {
+        return orderRepository.findById(id).orElse(null);
     }
 
     @Transactional
-    public void deleteById(long id) {
+    public void deleteById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
 

@@ -1,8 +1,8 @@
 package com.mykyda.placholderdrones.app.api;
 
+import com.mykyda.placholderdrones.app.DTO.demo.DroneDTO;
 import com.mykyda.placholderdrones.app.database.entity.Drone;
 import com.mykyda.placholderdrones.app.database.entity.DroneLog;
-import com.mykyda.placholderdrones.app.DTO.demo.DroneDTO;
 import com.mykyda.placholderdrones.app.service.DroneLogService;
 import com.mykyda.placholderdrones.app.service.DroneService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ public class DronesController {
     private final DroneService droneService;
 
     private final DroneLogService droneLogService;
+
 
     @Value("${placeholder-drones.delivery.origin.latitude}")
     private BigDecimal ORIGIN_LATITUDE;
@@ -50,8 +51,8 @@ public class DronesController {
     }
 
     @PostMapping("/facilitate")
-    public ResponseEntity<String> facilitateDrone(){
-        droneService.createDrone(ORIGIN_LATITUDE,ORIGIN_LONGITUDE);
+    public ResponseEntity<String> facilitateDrone() {
+        droneService.createDrone(ORIGIN_LATITUDE, ORIGIN_LONGITUDE);
         return ResponseEntity.ok().build();
     }
 }

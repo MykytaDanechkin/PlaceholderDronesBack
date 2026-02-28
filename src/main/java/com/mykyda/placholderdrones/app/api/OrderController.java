@@ -7,6 +7,7 @@ import com.mykyda.placholderdrones.app.DTO.demo.OrderDemoDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.PageResponse;
 import com.mykyda.placholderdrones.app.service.DeliveryService;
+import com.mykyda.placholderdrones.app.service.DemoService;
 import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,12 @@ public class OrderController {
 
     private final DeliveryService deliveryService;
 
+    private final DemoService demoService;
+
+
     @GetMapping("/{id}")
     public OrderDemoDTO getById(@PathVariable long id) {
-        return orderService.demoById(id);
+        return demoService.demoById(id);
     }
 
     @GetMapping
