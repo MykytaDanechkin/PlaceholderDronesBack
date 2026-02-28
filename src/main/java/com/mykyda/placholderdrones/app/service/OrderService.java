@@ -3,8 +3,9 @@ package com.mykyda.placholderdrones.app.service;
 import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
-import com.mykyda.placholderdrones.app.database.enums.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.database.entity.PageResponse;
+import com.mykyda.placholderdrones.app.database.enums.KitType;
 import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
@@ -71,7 +72,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Order> findAllFiltered(Map<String, String> filters) {
+    public PageResponse<Order> findAllFiltered(Map<String, String> filters) {
 
         Specification<Order> spec = Specification.allOf();
 
@@ -100,7 +101,7 @@ public class OrderService {
                     .hasKitType(KitType.valueOf(filters.get("kitType").toUpperCase())));
         }
 
-        int page = filters.containsKey("page") && !filters.get("page").isEmpty()
+        int pageNumber = filters.containsKey("page") && !filters.get("page").isEmpty()
                 ? Integer.parseInt(filters.get("page"))
                 : 0;
 
@@ -120,7 +121,17 @@ public class OrderService {
                     : Sort.by(field).ascending();
         }
 
-        return orderRepository.findAll(spec, PageRequest.of(page, size, sort));
+        PageRequest pageable = PageRequest.of(pageNumber, size, sort);
+
+        Page<Order> page = orderRepository.findAll(spec, pageable);
+
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     @Transactional(readOnly = true)
