@@ -37,9 +37,15 @@ public class DronesExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(OrderAccessException.class)
-    public ResponseEntity<String> handleOrderAccessException(OrderAccessException ex) {
+    @ExceptionHandler(OrderStatusException.class)
+    public ResponseEntity<String> handleOrderAccessException(OrderStatusException ex) {
         log.warn(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DroneAvailabilityException.class)
+    public ResponseEntity<String> handleDroneAvailabilityException(DroneAvailabilityException ex) {
+        log.warn(ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

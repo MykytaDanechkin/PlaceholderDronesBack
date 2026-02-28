@@ -47,8 +47,16 @@ class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/orders").permitAll()
                         .requestMatchers(HttpMethod.POST, "/orders/pay/*").permitAll()
 
+
+                        .requestMatchers(HttpMethod.GET, "/drones").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/drones/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/drones/log/*").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/orders/import").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/orders/deliver/*").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.PUT, "/orders/*").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.DELETE, "/orders/*").hasRole("ADMIN")
 
                         .anyRequest().permitAll()

@@ -1,4 +1,4 @@
-package com.mykyda.placholderdrones.app.DTO;
+package com.mykyda.placholderdrones.app.DTO.create;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

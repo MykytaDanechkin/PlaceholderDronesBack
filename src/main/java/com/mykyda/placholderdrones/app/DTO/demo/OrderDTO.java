@@ -1,6 +1,5 @@
-package com.mykyda.placholderdrones.app.DTO;
+package com.mykyda.placholderdrones.app.DTO.demo;
 
-import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +10,11 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class OrderPutDTO {
+@NoArgsConstructor
+public class OrderDTO {
+
+    long id;
 
     String receiverEmail;
 
@@ -21,8 +22,5 @@ public class OrderPutDTO {
 
     BigDecimal longitude;
 
-    KitType kitType;
-
     OrderStatus orderStatus;
-
 }

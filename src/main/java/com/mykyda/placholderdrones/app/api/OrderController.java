@@ -1,9 +1,10 @@
 package com.mykyda.placholderdrones.app.api;
 
-import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
-import com.mykyda.placholderdrones.app.DTO.OrderPutDTO;
-import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.service.DeliveryService;
 import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,8 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+
+    private final DeliveryService deliveryService;
 
     @GetMapping("/{id}")
     public Order getById(@PathVariable long id) {
@@ -51,6 +54,12 @@ public class OrderController {
     @PostMapping(value = "/pay/{id}")
     public ResponseEntity<String> payForOrder(@PathVariable("id") long id) {
         orderService.setPayedById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/deliver/{orderId}")
+    public ResponseEntity<String> startDelivery(@PathVariable long orderId) {
+        deliveryService.startDelivery(orderId);
         return ResponseEntity.noContent().build();
     }
 

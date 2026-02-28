@@ -1,8 +1,8 @@
 package com.mykyda.placholderdrones.app.service;
 
-import com.mykyda.placholderdrones.app.DTO.OrderCreateDTO;
-import com.mykyda.placholderdrones.app.DTO.OrderPutDTO;
-import com.mykyda.placholderdrones.app.DTO.OrderStatsDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
+import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
 import com.mykyda.placholderdrones.app.database.entity.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
@@ -256,11 +256,16 @@ public class OrderService {
         order.setTotalAmount(total);
     }
 
+    @Transactional
     public void setPayedById(long id) {
         var  order = orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
         if (order.getOrderStatus().equals(OrderStatus.WAITING_FOR_PAYMENT)) {
             order.setOrderStatus(OrderStatus.ORDERED);
             orderRepository.save(order);
         }
+    }
+
+    public void update(Order order) {
+        orderRepository.save(order);
     }
 }
