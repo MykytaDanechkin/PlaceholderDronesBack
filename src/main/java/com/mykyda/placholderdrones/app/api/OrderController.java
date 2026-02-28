@@ -3,6 +3,7 @@ package com.mykyda.placholderdrones.app.api;
 import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
+import com.mykyda.placholderdrones.app.DTO.demo.OrderDemoDTO;
 import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.database.entity.PageResponse;
 import com.mykyda.placholderdrones.app.service.DeliveryService;
@@ -25,8 +26,8 @@ public class OrderController {
     private final DeliveryService deliveryService;
 
     @GetMapping("/{id}")
-    public Order getById(@PathVariable long id) {
-        return orderService.findById(id);
+    public OrderDemoDTO getById(@PathVariable long id) {
+        return orderService.demoById(id);
     }
 
     @GetMapping

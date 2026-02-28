@@ -22,4 +22,6 @@ public interface DroneRepository extends JpaRepository<Drone, Long> {
     Optional<Drone> getRandomUnoccupied();
 
     List<Drone> getAllByStatusIs(DroneStatus status);
+
+    Optional<Drone> findByLastOrderId(Long lastOrderId);
 }
