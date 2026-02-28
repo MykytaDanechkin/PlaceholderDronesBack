@@ -59,4 +59,9 @@ public class DroneService {
     public void update(Drone drone) {
         droneRepository.save(drone);
     }
+
+    @Transactional(readOnly = true)
+    public Drone getRandomReturning() {
+        return droneRepository.getRandomReturning().orElse(null);
+    }
 }

@@ -18,4 +18,13 @@ public interface DroneRepository extends JpaRepository<Drone, Long> {
         LIMIT 1
         """, nativeQuery = true)
     Optional<Drone> getRandomUnoccupied();
+
+    @Query(value = """
+        SELECT *
+        FROM drone
+        WHERE status = 'RETURNING'
+        ORDER BY RANDOM()
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Drone> getRandomReturning();
 }

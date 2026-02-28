@@ -7,12 +7,12 @@ import com.mykyda.placholderdrones.app.database.entity.Order;
 import com.mykyda.placholderdrones.app.service.DeliveryService;
 import com.mykyda.placholderdrones.app.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,8 +30,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<Order> getAllFiltered(@RequestParam Map<String, String> filters) {
-        return orderService.findAllFiltered(filters).getContent();
+    public Page<Order> getAllFiltered(@RequestParam Map<String, String> filters) {
+        return orderService.findAllFiltered(filters);
     }
 
     @GetMapping("/stats")

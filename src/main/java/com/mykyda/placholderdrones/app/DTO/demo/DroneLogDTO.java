@@ -1,6 +1,6 @@
 package com.mykyda.placholderdrones.app.DTO.demo;
 
-import com.mykyda.placholderdrones.app.database.entity.DeliveryStatus;
+import com.mykyda.placholderdrones.app.database.enums.DeliveryStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,5 +1,6 @@
 package com.mykyda.placholderdrones.app.database.entity;
 
+import com.mykyda.placholderdrones.app.database.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

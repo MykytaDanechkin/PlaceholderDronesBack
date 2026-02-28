@@ -3,9 +3,9 @@ package com.mykyda.placholderdrones.app.service;
 import com.mykyda.placholderdrones.app.DTO.create.OrderCreateDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderPutDTO;
 import com.mykyda.placholderdrones.app.DTO.create.OrderStatsDTO;
-import com.mykyda.placholderdrones.app.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.enums.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
-import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import com.mykyda.placholderdrones.app.database.repository.OrderRepository;
 import com.mykyda.placholderdrones.app.database.specification.OrderSpecification;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
@@ -99,7 +99,14 @@ public class OrderService {
             page = Integer.parseInt(filters.get("page"));
         }
 
-        return orderRepository.findAll(spec, PageRequest.of(page, FILTERED_SEARCH_PAGE_SIZE));
+        var size = 0;
+        if (filters.get("size") != null && !filters.get("size").isEmpty()) {
+            size = Integer.parseInt(filters.get("size"));
+        } else {
+            size = FILTERED_SEARCH_PAGE_SIZE;
+        }
+
+        return orderRepository.findAll(spec, PageRequest.of(page, size));
     }
 
     @Transactional(readOnly = true)
@@ -258,7 +265,7 @@ public class OrderService {
 
     @Transactional
     public void setPayedById(long id) {
-        var  order = orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
+        var order = orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No order with id " + id));
         if (order.getOrderStatus().equals(OrderStatus.WAITING_FOR_PAYMENT)) {
             order.setOrderStatus(OrderStatus.ORDERED);
             orderRepository.save(order);
@@ -267,5 +274,10 @@ public class OrderService {
 
     public void update(Order order) {
         orderRepository.save(order);
+    }
+
+    @Transactional(readOnly = true)
+    public Order getRandomOnTheWayOrder() {
+        return orderRepository.getRandomOnTheWayOrder().orElse(null);
     }
 }

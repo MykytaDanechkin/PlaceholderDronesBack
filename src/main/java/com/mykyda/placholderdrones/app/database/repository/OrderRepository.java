@@ -1,11 +1,13 @@
 package com.mykyda.placholderdrones.app.database.repository;
 
 import com.mykyda.placholderdrones.app.database.entity.Order;
-import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
@@ -15,4 +17,13 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     @Query("select coalesce(sum(o.taxAmount),0.0) from Order o")
     double sumTax();
+
+    @Query(value = """
+        SELECT *
+        FROM postgres.public.orders
+        WHERE order_status = 'ON_THE_WAY'
+        ORDER BY RANDOM()
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Order> getRandomOnTheWayOrder();
 }

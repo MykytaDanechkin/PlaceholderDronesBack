@@ -1,5 +1,6 @@
 package com.mykyda.placholderdrones.app.database.entity;
 
+import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

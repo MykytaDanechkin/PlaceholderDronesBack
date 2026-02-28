@@ -1,7 +1,7 @@
 package com.mykyda.placholderdrones.app.service;
 
 import com.mykyda.placholderdrones.app.DTO.demo.DroneLogDTO;
-import com.mykyda.placholderdrones.app.database.entity.DroneStatus;
+import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

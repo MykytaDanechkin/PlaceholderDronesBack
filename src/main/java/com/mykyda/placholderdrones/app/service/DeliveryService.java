@@ -1,12 +1,16 @@
 package com.mykyda.placholderdrones.app.service;
 
 import com.mykyda.placholderdrones.app.database.entity.DroneLog;
-import com.mykyda.placholderdrones.app.database.entity.DroneStatus;
-import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.entity.Order;
+import com.mykyda.placholderdrones.app.database.enums.DeliveryStatus;
+import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
+import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import com.mykyda.placholderdrones.app.exception.OrderStatusException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -33,5 +37,25 @@ public class DeliveryService {
             orderService.update(order);
             droneLogService.save(droneLog);
         } else throw new OrderStatusException("Order is not suitable for delivery");
+    }
+
+    @Transactional
+    public void finishDelivery(Order order) {
+        var log = droneLogService.getByOrderId(order.getId());
+        if (log == null){
+            order.setOrderStatus(OrderStatus.ORDERED);
+            orderService.update(order);
+        } else {
+            var drone = log.getDrone();
+            drone.setStatus(DroneStatus.RETURNING);
+            droneService.update(drone);
+
+            order.setOrderStatus(OrderStatus.DELIVERED);
+            orderService.update(order);
+
+            log.setFinishedAt(LocalDateTime.now());
+            log.setDeliveryStatus(DeliveryStatus.FINISHED);
+            droneLogService.save(log);
+        }
     }
 }

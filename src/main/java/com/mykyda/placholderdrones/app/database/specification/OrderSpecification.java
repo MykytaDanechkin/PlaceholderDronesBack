@@ -1,8 +1,8 @@
 package com.mykyda.placholderdrones.app.database.specification;
 
-import com.mykyda.placholderdrones.app.database.entity.KitType;
+import com.mykyda.placholderdrones.app.database.enums.KitType;
 import com.mykyda.placholderdrones.app.database.entity.Order;
-import com.mykyda.placholderdrones.app.database.entity.OrderStatus;
+import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
