@@ -51,7 +51,7 @@ public class DronesController {
 
     @PostMapping("/facilitate")
     public ResponseEntity<String> facilitateDrone(){
-        droneService.createDrone();
+        droneService.createDrone(ORIGIN_LATITUDE,ORIGIN_LONGITUDE);
         return ResponseEntity.ok().build();
     }
 }

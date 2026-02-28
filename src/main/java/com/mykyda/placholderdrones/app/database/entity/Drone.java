@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Builder
@@ -22,6 +24,14 @@ public class Drone {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private DroneStatus status = DroneStatus.FREE;
+
+    @Column(precision = 9, scale = 6, nullable = false)
+    private BigDecimal currentLatitude;
+
+    @Column(precision = 9, scale = 6, nullable = false)
+    private BigDecimal currentLongitude;
+
+    private Long lastOrderId;
 
     @Builder.Default
     private int progress = 0;

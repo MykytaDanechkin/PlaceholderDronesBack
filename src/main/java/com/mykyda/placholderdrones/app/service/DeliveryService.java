@@ -7,9 +7,11 @@ import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import com.mykyda.placholderdrones.app.database.enums.OrderStatus;
 import com.mykyda.placholderdrones.app.exception.OrderStatusException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,12 +25,19 @@ public class DeliveryService {
 
     private final OrderService orderService;
 
+    @Value("${placeholder-drones.delivery.origin.latitude}")
+    private BigDecimal ORIGIN_LATITUDE;
+
+    @Value("${placeholder-drones.delivery.origin.longitude}")
+    private BigDecimal ORIGIN_LONGITUDE;
+
     @Transactional
     public void startDelivery(long orderId) {
         var order = orderService.findById(orderId);
         if (order.getOrderStatus() == OrderStatus.ORDERED || order.getOrderStatus() == OrderStatus.WAITING_FOR_PAYMENT) {
             var drone = droneService.getUnoccupied();
             drone.setStatus(DroneStatus.OCCUPIED);
+            drone.setLastOrderId(orderId);
             order.setOrderStatus(OrderStatus.ON_THE_WAY);
             var droneLog = DroneLog.builder()
                     .drone(drone)
@@ -49,10 +58,36 @@ public class DeliveryService {
                 orderService.update(order);
             } else {
                 var drone = log.getDrone();
-                drone.setProgress(drone.getProgress() + 10);
-                if (drone.getProgress() >= 100) {
+
+                int newProgress = drone.getProgress() + 10;
+
+                if (newProgress < 100) {
+
+                    BigDecimal progressFactor = BigDecimal.valueOf(newProgress)
+                            .divide(BigDecimal.valueOf(100));
+
+                    BigDecimal deltaLat = order.getLatitude()
+                            .subtract(ORIGIN_LATITUDE);
+
+                    BigDecimal deltaLon = order.getLongitude()
+                            .subtract(ORIGIN_LONGITUDE);
+
+                    BigDecimal newLat = ORIGIN_LATITUDE
+                            .add(deltaLat.multiply(progressFactor));
+
+                    BigDecimal newLon = ORIGIN_LONGITUDE
+                            .add(deltaLon.multiply(progressFactor));
+
+                    drone.setCurrentLatitude(newLat);
+                    drone.setCurrentLongitude(newLon);
+                    drone.setProgress(newProgress);
+
+                } else {
                     drone.setStatus(DroneStatus.RETURNING);
                     drone.setProgress(0);
+
+                    drone.setCurrentLatitude(order.getLatitude());
+                    drone.setCurrentLongitude(order.getLongitude());
 
                     order.setOrderStatus(OrderStatus.DELIVERED);
                     orderService.update(order);
