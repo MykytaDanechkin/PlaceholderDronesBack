@@ -1,8 +1,10 @@
 package com.mykyda.placholderdrones.app.service;
 
+import com.mykyda.placholderdrones.app.DTO.demo.DroneDTO;
 import com.mykyda.placholderdrones.app.DTO.demo.DroneLogDTO;
 import com.mykyda.placholderdrones.app.DTO.demo.OrderDTO;
 import com.mykyda.placholderdrones.app.database.entity.Drone;
+import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import com.mykyda.placholderdrones.app.database.repository.DroneLogRepository;
 import com.mykyda.placholderdrones.app.database.repository.DroneRepository;
 import com.mykyda.placholderdrones.app.exception.EntityNotFoundException;
@@ -47,6 +49,7 @@ public class DroneService {
         return DroneDTO.builder()
                 .logs(logs)
                 .status(drone.getStatus())
+                .progress(drone.getProgress())
                 .build();
     }
 
@@ -61,7 +64,24 @@ public class DroneService {
     }
 
     @Transactional(readOnly = true)
-    public Drone getRandomReturning() {
-        return droneRepository.getRandomReturning().orElse(null);
+    public List<Drone> getAllReturning() {
+        return droneRepository.getAllByStatusIs(DroneStatus.RETURNING);
+    }
+
+    @Transactional
+    public void progressReturn(List<Drone> drones) {
+        for (Drone drone : drones) {
+            drone.setProgress(drone.getProgress() + 10);
+            if (drone.getProgress() >= 100) {
+                drone.setStatus(DroneStatus.FREE);
+                drone.setProgress(0);
+            }
+            update(drone);
+        }
+    }
+
+    @Transactional
+    public void createDrone() {
+        droneRepository.save(Drone.builder().build());
     }
 }

@@ -1,6 +1,5 @@
 package com.mykyda.placholderdrones.app.service;
 
-import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,24 +16,23 @@ public class DroneConsumerService {
 
     private final DroneService droneService;
 
-    @Scheduled(fixedDelay = 120000)
-    public void completeDelivery(){
-        var order = orderService.getRandomOnTheWayOrder();
-        if (order == null){
+    @Scheduled(fixedDelay = 20000)
+    public void progressDelivery(){
+        var orders = orderService.getAllOnTheWayOrder();
+        if (orders.isEmpty()){
             log.debug("No orders to process");
         } else {
-            deliveryService.finishDelivery(order);
+            deliveryService.progressDelivery(orders);
         }
     }
 
-    @Scheduled(fixedDelay = 120000, initialDelay = 120000)
+    @Scheduled(fixedDelay = 30000)
     public void droneReturn(){
-        var drone = droneService.getRandomReturning();
-        if (drone == null){
+        var drones = droneService.getAllReturning();
+        if (drones.isEmpty()){
             log.debug("No returning drones");
         } else {
-            drone.setStatus(DroneStatus.FREE);
-            droneService.update(drone);
+            droneService.progressReturn(drones);
         }
     }
 }

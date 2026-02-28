@@ -277,7 +277,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order getRandomOnTheWayOrder() {
-        return orderRepository.getRandomOnTheWayOrder().orElse(null);
+    public List<Order> getAllOnTheWayOrder() {
+        return orderRepository.getAllByOrderStatusIs(OrderStatus.ON_THE_WAY);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,22 +41,28 @@ public class DeliveryService {
     }
 
     @Transactional
-    public void finishDelivery(Order order) {
-        var log = droneLogService.getByOrderId(order.getId());
-        if (log == null){
-            order.setOrderStatus(OrderStatus.ORDERED);
-            orderService.update(order);
-        } else {
-            var drone = log.getDrone();
-            drone.setStatus(DroneStatus.RETURNING);
-            droneService.update(drone);
+    public void progressDelivery(List<Order> orders) {
+        for (Order order : orders) {
+            var log = droneLogService.getByOrderId(order.getId());
+            if (log == null) {
+                order.setOrderStatus(OrderStatus.ORDERED);
+                orderService.update(order);
+            } else {
+                var drone = log.getDrone();
+                drone.setProgress(drone.getProgress() + 10);
+                if (drone.getProgress() >= 100) {
+                    drone.setStatus(DroneStatus.RETURNING);
+                    drone.setProgress(0);
 
-            order.setOrderStatus(OrderStatus.DELIVERED);
-            orderService.update(order);
+                    order.setOrderStatus(OrderStatus.DELIVERED);
+                    orderService.update(order);
 
-            log.setFinishedAt(LocalDateTime.now());
-            log.setDeliveryStatus(DeliveryStatus.FINISHED);
-            droneLogService.save(log);
+                    log.setFinishedAt(LocalDateTime.now());
+                    log.setDeliveryStatus(DeliveryStatus.FINISHED);
+                    droneLogService.save(log);
+                }
+                droneService.update(drone);
+            }
         }
     }
 }

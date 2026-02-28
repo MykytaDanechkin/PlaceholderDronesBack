@@ -22,4 +22,7 @@ public class Drone {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private DroneStatus status = DroneStatus.FREE;
+
+    @Builder.Default
+    private int progress = 0;
 }

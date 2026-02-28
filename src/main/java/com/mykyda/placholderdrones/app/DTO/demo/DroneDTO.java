@@ -1,6 +1,5 @@
-package com.mykyda.placholderdrones.app.service;
+package com.mykyda.placholderdrones.app.DTO.demo;
 
-import com.mykyda.placholderdrones.app.DTO.demo.DroneLogDTO;
 import com.mykyda.placholderdrones.app.database.enums.DroneStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +15,8 @@ import java.util.List;
 public class DroneDTO {
 
     DroneStatus status;
+
+    int progress;
 
     List<DroneLogDTO> logs;
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
@@ -18,12 +18,5 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("select coalesce(sum(o.taxAmount),0.0) from Order o")
     double sumTax();
 
-    @Query(value = """
-        SELECT *
-        FROM postgres.public.orders
-        WHERE order_status = 'ON_THE_WAY'
-        ORDER BY RANDOM()
-        LIMIT 1
-        """, nativeQuery = true)
-    Optional<Order> getRandomOnTheWayOrder();
+    List<Order> getAllByOrderStatusIs(OrderStatus orderStatus);
 }
